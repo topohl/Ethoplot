@@ -1,0 +1,44 @@
+import pandas as pd
+import plotly.graph_objs as go
+
+# read in the CSV file
+data = pd.read_csv('C:\\Users\\topohl\\Desktop\\CookieChallenge\\C1_C1.csv')
+
+# define the colors for the behaviors
+colors = ['#FACFD8', '#F8E3C1', '#E9F3C7', '#C8E6C9', '#B2DFDB']
+
+# create a separate trace for each behavior
+traces = []
+for i, column in enumerate(data.columns[1:]):
+    x_vals = []
+    y_vals = []
+    is_observing = False
+    for j, value in enumerate(data[column]):
+        if value == 1:
+            # If the behavior is observed, add the current time point to the x-axis
+            # and add the current behavior to the y-axis.
+            x_vals.append(data['time'][j])
+            y_vals.append(column)
+            is_observing = True
+        else:
+            # If the behavior is not observed, end the current line (if there is one)
+            # and start a new one for the next time point where the behavior is observed.
+            if is_observing:
+                line = go.Scatter(x=x_vals, y=y_vals, mode='lines', line=dict(color=colors[i % len(colors)], width=10), showlegend=False)
+                traces.append(line)
+                x_vals = []
+                y_vals = []
+                is_observing = False
+    # Add the final line for this behavior (if there is one).
+    if is_observing:
+        line = go.Scatter(x=x_vals, y=y_vals, mode='lines', line=dict(color=colors[i % len(colors)], width=10), showlegend=False)
+        traces.append(line)
+
+# create the layout for the plot
+layout = go.Layout(title='Ethogram Plot', xaxis={'title': 'Time (0.1 seconds)', 'showgrid': False}, yaxis={'title': 'Behavior', 'type': 'category', 'showgrid': False}, showlegend=False, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
+
+# create the figure and plot the traces
+fig = go.Figure(data=traces, layout=layout)
+
+# show the plot
+fig.show()
